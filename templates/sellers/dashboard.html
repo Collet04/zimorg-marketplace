@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Seller Dashboard - ZOM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Seller Dashboard</h2>
+        <p class="text-muted">Manage your organic business profile, products, and evidence submission status.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h4 class="card-title text-success">{{ profile.business_name }}</h4>
+                <p><strong>Type:</strong> {{ profile.get_seller_type_display }}</p>
+                <p><strong>Location:</strong> {{ profile.location }}</p>
+                <p><strong>Verification Status:</strong> 
+                    <span class="badge bg-warning text-dark">{{ profile.get_verification_status_display }}</span>
+                </p>
+                <hr>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'sellers:onboarding' %}" class="btn btn-outline-success btn-sm">Edit Profile</a>
+                    <a href="{% url 'verification:evidence_list' %}" class="btn btn-success btn-sm">Manage Evidence</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

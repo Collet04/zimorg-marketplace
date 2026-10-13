@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - ZOM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="card-title text-success mb-3">User Profile</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>Role:</strong> {{ user.get_role_display }}</li>
+                    <li class="list-group-item"><strong>Phone Number:</strong> {{ user.phone_number|default:"Not provided" }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

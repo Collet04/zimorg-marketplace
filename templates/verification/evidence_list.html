@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Evidence - ZOM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Compliance Evidence</h2>
+        <p class="text-muted">Upload and manage certificates, inspection records, and documents supporting your organic claims.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'verification:upload_evidence' %}" class="btn btn-success">+ Upload New Evidence</a>
+        <a href="{% url 'sellers:dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                {% if documents %}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Uploaded</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in documents %}
+                                <tr>
+                                    <td><strong>{{ doc.title }}</strong></td>
+                                    <td>{{ doc.get_document_type_display }}</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">{{ doc.get_status_display }}</span>
+                                    </td>
+                                    <td>{{ doc.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View File</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No evidence documents uploaded yet. Upload your organic documents to initiate verification.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

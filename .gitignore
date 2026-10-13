@@ -1,0 +1,27 @@
+# Python / Django runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+*.log
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Media Uploads (Avoid pushing user uploaded evidence/images to git)
+media/
+!media/.gitkeep
+
+# Environment variables & secrets
+.env
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+Thumbs.db
+.DS_Store
