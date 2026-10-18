@@ -29,6 +29,7 @@ urlpatterns = [
     path('sellers/', include('sellers.urls')),
     path('verification/', include('verification.urls')),
     path('dashboard/', include('dashboard.urls')),  # Added dashboard namespace!
+    path('products/', include('products.urls')),
 ]
 
 if settings.DEBUG:

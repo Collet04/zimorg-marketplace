@@ -21,9 +21,11 @@
                     <span class="badge bg-warning text-dark">{{ profile.get_verification_status_display }}</span>
                 </p>
                 <hr>
+               
                 <div class="d-flex gap-2">
                     <a href="{% url 'sellers:onboarding' %}" class="btn btn-outline-success btn-sm">Edit Profile</a>
-                    <a href="{% url 'verification:evidence_list' %}" class="btn btn-success btn-sm">Manage Evidence</a>
+                    <a href="{% url 'verification:evidence_list' %}" class="btn btn-outline-primary btn-sm">Manage Evidence</a>
+                    <a href="{% url 'products:seller_products' %}" class="btn btn-success btn-sm">My Products</a>
                 </div>
             </div>
         </div>
