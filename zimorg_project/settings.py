@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import shutil
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -51,6 +52,8 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'auth_app.User'
+AUTHENTICATION_BACKENDS = ['auth_app.backends.EmailBackend']
+LOGIN_URL = 'auth_app:login'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -137,3 +140,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files (Uploaded evidence, receipts, product images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+TESSERACT_CMD = os.environ.get('TESSERACT_CMD') or shutil.which('tesseract') or ''
+if not TESSERACT_CMD and os.name == 'nt':
+    default_tesseract_path = Path(r'C:\Program Files\Tesseract-OCR\tesseract.exe')
+    if default_tesseract_path.is_file():
+        TESSERACT_CMD = str(default_tesseract_path)

@@ -7,8 +7,9 @@ from .models import Product, Category
 from .forms import ProductForm
 
 
+@login_required
 def product_catalog_view(request):
-    """Public marketplace product catalog with search and category filtering."""
+    """Display the marketplace product catalog to signed-in users."""
     query = request.GET.get('q', '').strip()
     category_slug = request.GET.get('category', '').strip()
 

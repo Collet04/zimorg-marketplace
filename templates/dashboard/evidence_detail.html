@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Review {{ evidence.title }} - ZOM{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'dashboard:evidence' %}">&larr; Back to evidence</a></p>
+<h1 class="text-success">{{ evidence.title }}</h1>
+{% include 'dashboard/_admin_nav.html' %}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Seller submission</h2>
+                <p><strong>Seller:</strong> <a href="{% url 'dashboard:seller_detail' evidence.seller.pk %}">{{ evidence.seller.business_name }}</a></p>
+                <p><strong>Contact:</strong> {{ evidence.seller.user.email }} · {{ evidence.seller.user.phone_number|default:"No phone" }}</p>
+                <p><strong>Document type:</strong> {{ evidence.get_document_type_display }}</p>
+                <p><strong>Issue date:</strong> {{ evidence.issue_date|default:"Not provided" }} · <strong>Expiry date:</strong> {{ evidence.expiry_date|default:"Not provided" }}</p>
+                <p><strong>Automated screening:</strong> {{ evidence.get_screening_status_display }} · {{ evidence.get_screening_recommendation_display }}</p>
+                <p><strong>Screening confidence:</strong> {% if evidence.confidence_score != None %}{{ evidence.confidence_score }}/100{% else %}Not available{% endif %} · <strong>AI recommendation:</strong> {{ evidence.get_ai_recommendation_display }}</p>
+                {% if evidence.audit_reasons or evidence.screening_findings %}
+                <ul class="list-group mb-3">
+                    {% for finding in evidence.audit_reasons|default:evidence.screening_findings %}
+                    <li class="list-group-item">
+                        <strong>{{ finding.severity|title }}:</strong> {{ finding.message }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                <p><strong>AI/OCR extracted text:</strong></p>
+                <div class="border rounded p-3 bg-light">{{ evidence.extracted_text|default:"No extracted text available. The uploaded file can be reviewed manually."|linebreaks }}</div>
+                {% if evidence.file %}<a class="btn btn-outline-primary mt-3" href="{{ evidence.file.url }}" target="_blank" rel="noopener">Open submitted document</a>{% endif %}
+                <a class="btn btn-outline-secondary mt-3" href="{% url 'ai_engine:analysis_report' evidence.pk %}">AI inspection report</a>
+                <form method="post" action="{% url 'dashboard:rescreen_evidence' evidence.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-secondary mt-3" type="submit">Run screening again</button>
+                </form>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <section class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Review decision</h2>
+                {% if evidence.reviewed_by %}<p class="text-muted">Last reviewed by {{ evidence.reviewed_by.email }}.</p>{% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    {{ review_form.as_p }}
+                    <button class="btn btn-success" type="submit">Save review</button>
+                </form>
+                <hr>
+                <form method="post" action="{% url 'dashboard:verify_evidence' evidence.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <button class="btn btn-success" type="submit" name="action" value="approve">Approve evidence</button>
+                </form>
+                <form method="post" action="{% url 'dashboard:verify_evidence' evidence.pk %}">
+                    {% csrf_token %}
+                    <label class="form-label" for="evidence-rejection-reason">Reason for rejection</label>
+                    <textarea class="form-control mb-2" id="evidence-rejection-reason" name="review_notes" rows="3" required>{{ evidence.review_notes }}</textarea>
+                    <button class="btn btn-danger" type="submit" name="action" value="reject">Reject evidence</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

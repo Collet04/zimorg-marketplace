@@ -19,7 +19,9 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
+from auth_app.forms import EmailAdminAuthenticationForm
 
+admin.site.login_form = EmailAdminAuthenticationForm
 
 urlpatterns = [
     # Redirect the root URL (http://127.0.0.1:8000/) directly to login
@@ -28,6 +30,7 @@ urlpatterns = [
     path('auth/', include('auth_app.urls')),
     path('sellers/', include('sellers.urls')),
     path('verification/', include('verification.urls')),
+    path('ai-engine/', include('ai_engine.urls')),
     path('dashboard/', include('dashboard.urls')),  # Added dashboard namespace!
     path('products/', include('products.urls')),
 ]

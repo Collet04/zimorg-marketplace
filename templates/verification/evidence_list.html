@@ -26,6 +26,7 @@
                                     <th>Title</th>
                                     <th>Type</th>
                                     <th>Status</th>
+                                    <th>Automated screening</th>
                                     <th>Uploaded</th>
                                     <th>Actions</th>
                                 </tr>
@@ -38,9 +39,23 @@
                                     <td>
                                         <span class="badge bg-info text-dark">{{ doc.get_status_display }}</span>
                                     </td>
+                                    <td>
+                                        {{ doc.get_screening_status_display }}<br>
+                                        <small>{{ doc.get_screening_recommendation_display }}</small>
+                                        {% if doc.screening_findings %}
+                                            <ul class="small text-muted mb-0">
+                                                {% for finding in doc.screening_findings %}
+                                                    {% if finding.severity == 'warning' or finding.severity == 'high' %}
+                                                        <li>{{ finding.message }}</li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ doc.created_at|date:"M d, Y" }}</td>
                                     <td>
                                         <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View File</a>
+                                        <a href="{% url 'verification:update_evidence' doc.pk %}" class="btn btn-sm btn-outline-success">Update / Replace</a>
                                     </td>
                                 </tr>
                                 {% endfor %}

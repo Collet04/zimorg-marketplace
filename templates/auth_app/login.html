@@ -8,6 +8,7 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
                 <h3 class="card-title text-center text-success mb-4">Welcome Back</h3>
+                <p class="text-center text-muted small mb-3">Sign in with your email address</p>
                 <form method="post">
                     {% csrf_token %}
                     {{ form.as_p }}

@@ -6,4 +6,5 @@ app_name = 'verification'
 urlpatterns = [
     path('evidence/', views.evidence_list_view, name='evidence_list'),
     path('evidence/upload/', views.upload_evidence_view, name='upload_evidence'),
+    path('evidence/<int:evidence_id>/update/', views.update_evidence_view, name='update_evidence'),
 ]

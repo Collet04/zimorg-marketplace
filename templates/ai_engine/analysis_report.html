@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Inspection Report - {{ evidence.title }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'dashboard:seller_detail' evidence.seller_id %}">&larr; Back to seller review</a></p>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h1 class="text-success">AI Inspection Report</h1>
+        <p class="mb-1">{{ evidence.title }} · {{ evidence.get_document_type_display }}</p>
+        <p class="text-muted mb-0">{{ evidence.seller.business_name }} · {{ evidence.seller.location }}</p>
+    </div>
+    <span class="badge {% if evidence.ai_recommendation == 'APPROVED' %}text-bg-success{% elif evidence.ai_recommendation == 'REJECTED' %}text-bg-danger{% else %}text-bg-warning{% endif %}">
+        {{ evidence.get_ai_recommendation_display }}
+    </span>
+</div>
+<div class="alert alert-info">
+    This local, rule-based screening report is a review aid, not proof of certificate authenticity or a final seller decision.
+    Verify issuer, certificate number, stamp, signature, and the original document before approval.
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <h2 class="h6 text-muted">Screening confidence</h2>
+        <p class="display-6">{% if evidence.confidence_score != None %}{{ evidence.confidence_score }}{% else %}—{% endif %}<small class="fs-6"> / 100</small></p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <h2 class="h6 text-muted">Screening status</h2><p class="h5">{{ evidence.get_screening_status_display }}</p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <h2 class="h6 text-muted">Final document status</h2><p class="h5">{{ evidence.get_status_display }}</p>
+    </div></div></div>
+</div>
+
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4">Audit breakdown</h2>
+        <ul class="list-group list-group-flush">
+            {% for reason in audit_reasons %}
+            <li class="list-group-item px-0">
+                <strong>{{ reason.severity|default:"info"|title }}:</strong> {{ reason.message }}
+            </li>
+            {% empty %}
+            <li class="list-group-item px-0 text-muted">No automated findings are available. Review the submitted document manually.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4">Submitted evidence</h2>
+        <p><strong>Issue / expiry:</strong> {{ evidence.issue_date|default:"Not provided" }} / {{ evidence.expiry_date|default:"Not provided" }}</p>
+        <p><strong>Submitted file:</strong> {% if evidence.file %}<a href="{{ evidence.file.url }}" target="_blank" rel="noopener">Open {{ evidence.title }}</a>{% else %}Unavailable{% endif %}</p>
+        <h3 class="h6">Extracted text</h3>
+        <div class="border rounded p-3 bg-light">{{ evidence.extracted_text|default:"No text was extracted."|linebreaks }}</div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Compliance Dashboard - Zimbabwe Organic Marketplace{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-success">Seller Compliance Dashboard</h1>
+        <p class="text-muted mb-0">Review organic seller applications and supporting evidence.</p>
+    </div>
+    <a href="{% url 'dashboard:sellers' %}" class="btn btn-success">Manage sellers</a>
+</div>
+{% include 'dashboard/_admin_nav.html' %}
+
+<section aria-label="Compliance overview" class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <p class="text-muted mb-1">Active verified sellers</p><p class="display-6 mb-0">{{ active_seller_count }}</p>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <p class="text-muted mb-1">Pending verification</p><p class="display-6 mb-0">{{ pending_seller_count }}</p>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <p class="text-muted mb-1">Rejected sellers</p><p class="display-6 mb-0">{{ rejected_seller_count }}</p>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body">
+            <p class="text-muted mb-1">Verified evidence documents</p><p class="display-6 mb-0">{{ verified_evidence_count }}</p>
+        </div></div>
+    </div>
+</section>
+
+<nav class="nav nav-tabs mb-3" aria-label="Seller compliance sections">
+    <a class="nav-link" href="#verified-sellers">Verified ({{ active_seller_count }})</a>
+    <a class="nav-link" href="#pending-sellers">Pending ({{ pending_seller_count }})</a>
+    <a class="nav-link" href="#rejected-sellers">Rejected ({{ rejected_seller_count }})</a>
+</nav>
+
+<section id="verified-sellers" class="mb-5">
+    <h2 class="h4 text-success">Verified sellers</h2>
+    <div class="table-responsive card border-0 shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Business</th><th>Location</th><th>Verified evidence</th><th>Catalog</th><th></th></tr></thead>
+            <tbody>
+            {% for seller in verified_sellers %}
+                <tr>
+                    <td><a href="{% url 'dashboard:seller_detail' seller.pk %}">{{ seller.business_name }}</a><br><small class="text-muted">{{ seller.user.email }}</small></td>
+                    <td>{{ seller.location }}</td>
+                    <td>
+                        {% for document in seller.evidence_documents.all %}
+                            {% if document.status == 'ACCEPTED' %}
+                                {% if document.file %}<a class="d-block" href="{{ document.file.url }}" target="_blank" rel="noopener">{{ document.title }} — verified document</a>{% endif %}
+                                <a class="d-block" href="{% url 'ai_engine:analysis_report' document.pk %}">AI inspection report</a>
+                            {% endif %}
+                        {% empty %}<span class="text-muted">No evidence submitted</span>
+                        {% endfor %}
+                    </td>
+                    <td><a class="btn btn-sm btn-outline-success" href="{% url 'products:catalog' %}?q={{ seller.business_name|urlencode }}">View catalog</a></td>
+                    <td><span class="badge text-bg-success">Verified</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No verified sellers yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="pending-sellers" class="mb-5">
+    <h2 class="h4 text-warning-emphasis">Sellers pending verification</h2>
+    <div class="table-responsive card border-0 shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Business</th><th>Location</th><th>Submitted evidence &amp; AI review</th><th>Decision</th></tr></thead>
+            <tbody>
+            {% for seller in pending_sellers %}
+                <tr>
+                    <td>{{ seller.business_name }}<br><small class="text-muted">{{ seller.user.email }}</small></td>
+                    <td>{{ seller.location }}</td>
+                    <td>
+                        {% for document in seller.evidence_documents.all %}
+                            <div class="mb-2">
+                                {% if document.file %}<a href="{{ document.file.url }}" target="_blank" rel="noopener">{{ document.title }} — open file</a><br>{% endif %}
+                                <a href="{% url 'ai_engine:analysis_report' document.pk %}">AI inspection report</a><br>
+                                <small>Score: {% if document.confidence_score != None %}{{ document.confidence_score }}/100{% else %}Not screened{% endif %} · {{ document.get_ai_recommendation_display }}</small>
+                            </div>
+                        {% empty %}<span class="text-muted">No evidence documents submitted.</span>
+                        {% endfor %}
+                    </td>
+                    <td><a class="btn btn-sm btn-warning" href="{% url 'dashboard:seller_detail' seller.pk %}">Review &amp; decide</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="text-center text-muted py-4">No sellers are awaiting verification.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="rejected-sellers" class="mb-5">
+    <h2 class="h4 text-danger">Rejected sellers</h2>
+    <div class="table-responsive card border-0 shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Business</th><th>Location</th><th>Rejection reason</th><th>Audit trail</th></tr></thead>
+            <tbody>
+            {% for seller in rejected_sellers %}
+                <tr>
+                    <td>{{ seller.business_name }}<br><small class="text-muted">{{ seller.user.email }}</small></td>
+                    <td>{{ seller.location }}</td>
+                    <td>{{ seller.rejection_reason|default:"No reason recorded."|linebreaksbr }}</td>
+                    <td>
+                        {% for document in seller.evidence_documents.all %}
+                            {% if document.file %}<a class="d-block" href="{{ document.file.url }}" target="_blank" rel="noopener">{{ document.title }} — submitted file</a>{% endif %}
+                            <a class="d-block" href="{% url 'ai_engine:analysis_report' document.pk %}">{{ document.title }} — inspection report</a>
+                        {% empty %}<span class="text-muted">No supporting documents.</span>
+                        {% endfor %}
+                        <a class="d-block mt-1" href="{% url 'dashboard:seller_detail' seller.pk %}">Seller review history</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="text-center text-muted py-4">No rejected sellers.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'dashboard:customers' %}" class="btn btn-outline-success">Manage customers ({{ customer_count }})</a>
+    <a href="{% url 'dashboard:evidence' %}?status=REQUIRES_REVIEW" class="btn btn-outline-warning">Review documents ({{ evidence_review_count }})</a>
+</div>
+{% endblock %}

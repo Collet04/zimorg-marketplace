@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Customer - ZOM{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'dashboard:customers' %}">&larr; Back to customers</a></p>
+<h1 class="text-success">Customer account</h1>
+{% include 'dashboard/_admin_nav.html' %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Name</dt><dd class="col-sm-9">{{ customer.get_full_name|default:customer.username }}</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ customer.email }}</dd>
+            <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ customer.phone_number|default:"Not provided" }}</dd>
+            <dt class="col-sm-3">Joined</dt><dd class="col-sm-9">{{ customer.date_joined|date:"M d, Y H:i" }}</dd>
+            <dt class="col-sm-3">Email verified</dt><dd class="col-sm-9">{{ customer.is_verified_email|yesno:"Yes,No" }}</dd>
+        </dl>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-check mb-3">
+                {{ account_form.is_active }}
+                <label class="form-check-label" for="{{ account_form.is_active.id_for_label }}">{{ account_form.is_active.label }}</label>
+            </div>
+            <button type="submit" class="btn btn-success">Save customer status</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

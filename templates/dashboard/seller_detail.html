@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ seller.business_name }} - Manage Seller{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'dashboard:sellers' %}">&larr; Back to sellers</a></p>
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="text-success">{{ seller.business_name }}</h1>
+        <p class="text-muted">{{ seller.get_seller_type_display }} · {{ seller.location }}</p>
+    </div>
+    <span class="badge text-bg-secondary">{{ seller.get_verification_status_display }}</span>
+</div>
+{% include 'dashboard/_admin_nav.html' %}
+
+<section class="card border-0 shadow-sm mb-4" aria-labelledby="mandatory-documents-heading">
+    <div class="card-body">
+        <h2 class="h5" id="mandatory-documents-heading">Mandatory compliance checklist</h2>
+        <ul class="list-group list-group-flush">
+            {% for item in mandatory_document_checklist %}
+            <li class="list-group-item px-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>{{ item.label }}</span>
+                {% if item.approved %}
+                    <span class="badge text-bg-success">Approved</span>
+                {% elif item.submitted %}
+                    <span class="badge text-bg-warning">Submitted — awaiting approval</span>
+                {% else %}
+                    <span class="badge text-bg-danger">Missing</span>
+                {% endif %}
+                {% if item.documents %}
+                    <span>
+                    {% for document in item.documents %}
+                        <a href="{% url 'dashboard:evidence_detail' document.pk %}">{{ document.title }}</a>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="small text-muted mb-0 mt-2">A seller can only be verified after all three mandatory checklist entries are approved.</p>
+    </div>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <section class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Account details</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Name</dt><dd class="col-sm-8">{{ seller.user.get_full_name|default:seller.user.username }}</dd>
+                    <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ seller.user.email }}</dd>
+                    <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">{{ seller.user.phone_number|default:"Not provided" }}</dd>
+                    <dt class="col-sm-4">Farm size</dt><dd class="col-sm-8">{{ seller.farm_size_hectares|default:"Not provided" }}{% if seller.farm_size_hectares %} hectares{% endif %}</dd>
+                    <dt class="col-sm-4">Years operating</dt><dd class="col-sm-8">{{ seller.years_operating }}</dd>
+                    <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ seller.description|default:"No description provided." }}</dd>
+                    {% if seller.verification_status == 'REJECTED' %}<dt class="col-sm-4">Rejection reason</dt><dd class="col-sm-8">{{ seller.rejection_reason|default:"No reason recorded." }}</dd>{% endif %}
+                </dl>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Seller verification</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ verification_form.as_p }}
+                    <button class="btn btn-success" type="submit">Save verification status</button>
+                </form>
+                <hr>
+                <h3 class="h6">Application decision</h3>
+                <form method="post" action="{% url 'dashboard:verify_seller' seller.pk %}" class="mb-2">
+                    {% csrf_token %}
+                    <button class="btn btn-success" type="submit" name="action" value="approve">Approve seller</button>
+                </form>
+                <form method="post" action="{% url 'dashboard:verify_seller' seller.pk %}">
+                    {% csrf_token %}
+                    <label class="form-label" for="seller-rejection-reason">Reason for rejection</label>
+                    <textarea class="form-control mb-2" id="seller-rejection-reason" name="rejection_reason" rows="3" required>{{ seller.rejection_reason }}</textarea>
+                    <button class="btn btn-danger" type="submit" name="action" value="reject">Reject seller</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+
+<h2 class="h4">Submitted evidence</h2>
+<div class="row g-3">
+    {% for document in documents %}
+    <div class="col-lg-6">
+        <article class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="h5">{{ document.title }}</h3>
+                <p class="mb-1"><strong>Type:</strong> {{ document.get_document_type_display }}</p>
+                <p class="mb-1"><strong>Status:</strong> {{ document.get_status_display }}</p>
+                <p class="mb-1"><strong>AI confidence:</strong> {% if document.confidence_score != None %}{{ document.confidence_score }}/100{% else %}Not screened{% endif %}</p>
+                <p class="mb-1"><strong>AI recommendation:</strong> {{ document.get_ai_recommendation_display }}</p>
+                <p class="mb-1"><strong>Issue / expiry:</strong> {{ document.issue_date|default:"—" }} / {{ document.expiry_date|default:"—" }}</p>
+                {% if document.audit_reasons or document.screening_findings %}
+                <ul class="small">
+                    {% for reason in document.audit_reasons|default:document.screening_findings %}<li>{{ reason.message }}</li>{% endfor %}
+                </ul>
+                {% endif %}
+                <p><strong>AI/OCR extracted text:</strong><br>{{ document.extracted_text|default:"No extracted text available."|linebreaksbr }}</p>
+                <p><strong>Review notes:</strong><br>{{ document.review_notes|default:"No review notes."|linebreaksbr }}</p>
+                {% if document.file %}<a class="btn btn-sm btn-outline-primary" href="{{ document.file.url }}" target="_blank" rel="noopener">View submitted file</a>{% endif %}
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'ai_engine:analysis_report' document.pk %}">AI inspection report</a>
+                <a class="btn btn-sm btn-success" href="{% url 'dashboard:evidence_detail' document.pk %}">Review document</a>
+            </div>
+        </article>
+    </div>
+    {% empty %}
+    <div class="col-12"><p class="text-muted">This seller has not submitted any evidence documents.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}

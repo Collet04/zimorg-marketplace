@@ -1,20 +1,26 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload Evidence - ZOM{% endblock %}
+{% block title %}{% if is_update %}Update Evidence{% else %}Upload Evidence{% endif %} - ZOM{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-7">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
-                <h3 class="card-title text-success mb-3">Upload Supporting Evidence</h3>
-                <p class="text-muted">Provide valid documentation (certificates, inspection sheets, etc.) to strengthen your trust profile.</p>
+                <h3 class="card-title text-success mb-3">{% if is_update %}Update Supporting Evidence{% else %}Upload Supporting Evidence{% endif %}</h3>
+                <p class="text-muted">
+                    {% if is_update %}
+                        Replace the current file or update its details. The updated document will be sent for review.
+                    {% else %}
+                        Provide a PDF or image document up to 20 MB. Text is extracted locally and screened for document relevance and expiry dates. Upload each document type once; use Update / Replace to submit a revision.
+                    {% endif %}
+                </p>
                 
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-success">Upload Document</button>
+                        <button type="submit" class="btn btn-success">{% if is_update %}Save Updated Document{% else %}Upload Document{% endif %}</button>
                         <a href="{% url 'verification:evidence_list' %}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>

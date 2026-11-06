@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Evidence - ZOM{% endblock %}
+
+{% block content %}
+<h1 class="text-success mb-3">Seller Evidence</h1>
+{% include 'dashboard/_admin_nav.html' %}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5"><input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Search document, seller, or extracted text"></div>
+    <div class="col-md-3">
+        <select class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}
+            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" name="screening_status">
+            <option value="">All screening results</option>
+            {% for value, label in screening_statuses %}
+            <option value="{{ value }}" {% if screening_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-success" type="submit">Filter</button></div>
+</form>
+
+<div class="table-responsive card border-0 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Document</th><th>Seller</th><th>Review status</th><th>Screening</th><th>Uploaded</th><th>Extracted text</th><th></th></tr></thead>
+        <tbody>
+        {% for document in documents %}
+            <tr>
+                <td>{{ document.title }}<br><small class="text-muted">{{ document.get_document_type_display }}</small></td>
+                <td>{{ document.seller.business_name }}<br><small>{{ document.seller.user.email }}</small></td>
+                <td>{{ document.get_status_display }}</td>
+                <td>{{ document.get_screening_status_display }}<br><small>{{ document.get_screening_recommendation_display }}</small></td>
+                <td>{{ document.created_at|date:"M d, Y" }}</td>
+                <td>{{ document.extracted_text|default:"No extracted text"|truncatechars:100 }}</td>
+                <td><a class="btn btn-sm btn-outline-success" href="{% url 'dashboard:evidence_detail' document.pk %}">Review</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-4">No evidence documents found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -13,7 +13,7 @@ def register_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='auth_app.backends.EmailBackend')
             messages.success(request, f"Welcome to ZOM, {user.username}! Your account was created successfully.")
             
             # Route sellers to seller profile setup, buyers to home/dashboard
@@ -44,7 +44,7 @@ def login_view(request):
                 return redirect(next_url)
             return redirect('dashboard:home')
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Invalid email or password.")
     else:
         form = LoginForm()
 

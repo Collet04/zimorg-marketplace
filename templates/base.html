@@ -14,14 +14,21 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="{% url 'index' %}">ZOM Organic</a>
             <div class="navbar-nav me-auto">
+                {% if user.is_authenticated %}
                 <a class="nav-link text-white" href="{% url 'products:catalog' %}">Marketplace</a>
+                {% endif %}
                 {% if user.is_authenticated and user.is_seller %}
                 <a class="nav-link text-white" href="{% url 'sellers:dashboard' %}">Seller Dashboard</a>
                 {% endif %}
             </div>
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
-                <span class="nav-link text-white me-2">Hello, @{{ user.username }} ({{ user.get_role_display }})</span>
+                <span class="nav-link text-white me-2">Hello, @{{ user.username }} (
+                    {% if user.is_admin_user %}Administrator{% else %}{{ user.get_role_display }}{% endif %}
+                    )</span>
+                {% if user.is_admin_user %}
+                <a class="nav-link text-white" href="{% url 'dashboard:home' %}">Admin Dashboard</a>
+                {% endif %}
                 <a class="nav-link text-white" href="{% url 'auth_app:logout' %}">Logout</a>
                 {% else %}
                 <a class="nav-link text-white" href="{% url 'auth_app:login' %}">Login</a>

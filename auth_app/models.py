@@ -31,7 +31,11 @@ class User(AbstractUser):
         return self.role == self.Role.VERIFIER
 
     def is_admin_user(self):
-        return self.role in [self.Role.ADMIN, self.Role.SUPER_ADMIN] or self.is_superuser
+        return (
+            self.role in [self.Role.ADMIN, self.Role.SUPER_ADMIN]
+            or self.is_staff
+            or self.is_superuser
+        )
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

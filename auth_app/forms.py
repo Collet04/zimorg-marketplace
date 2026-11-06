@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User
 
@@ -31,11 +32,29 @@ class RegistrationForm(UserCreationForm):
             if field_name != 'role':
                 field.widget.attrs.update({'class': 'form-control'})
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('An account with this email address already exists.')
+        return email
+
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'})
+    username = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com'})
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].help_text = 'Use your email address to sign in.'
+
+
+class EmailAdminAuthenticationForm(AdminAuthenticationForm):
+    username = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={'autofocus': True}),
     )
